@@ -1,18 +1,19 @@
 import textnode
 import os
 import shutil
+from pathlib import Path
 from block_markdown import markdown_to_html_node 
 from htmlnode import HTMLNode
 from extract_title import extract_title
 
 def main():
     pass
-source_dir = 'static'
-target_dir = 'public'
 
-from_path = "content/index.md"  # Adjust path as needed
-template_path = "template.html"  # Adjust path as needed
-dest_path = "public/index.html"  # Adjust path as needed
+dir_path_static = "./static"
+dir_path_public = "./public"
+dir_path_content = "./content"
+template_path = "./template.html"
+
 
 def copy_contents(source_dir, target_dir, is_initial_call=True):
     if is_initial_call:
@@ -37,7 +38,7 @@ def copy_contents(source_dir, target_dir, is_initial_call=True):
             copy_contents(source_path, target_path, False)
 
 def generate_page(from_path, template_path, dest_path):
-    print(f"Generating page from {from_path} to {dest_path} using {template_path}")
+    #print(f"Generating page from {from_path} to {dest_path} using {template_path}")
     with open(from_path) as my_file:
         markdown= my_file.read()
     with open(template_path) as my_file:
@@ -53,7 +54,18 @@ def generate_page(from_path, template_path, dest_path):
     with open(dest_path, 'w') as file:
         file.write(full_content)
 
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+    for filename in os.listdir(dir_path_content):
+        from_path = os.path.join(dir_path_content, filename)
+        dest_path = os.path.join(dest_dir_path, filename)
+        if os.path.isfile(from_path):
+            dest_path = Path(dest_path).with_suffix(".html")
+            generate_page(from_path, template_path, dest_path)
+        else:
+            generate_pages_recursive(from_path, template_path, dest_path)
+
+
 main()
-copy_contents(source_dir, target_dir)
-generate_page(from_path, template_path, dest_path)
- 
+#copy_contents(source_dir, target_dir)
+print("Generating content...")
+generate_pages_recursive(dir_path_content, template_path, dir_path_public)
